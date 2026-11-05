@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.astro/
+# Latest is fetched from the ws repository by `pnpm fetch-docs`; only the Docs
+# snapshots under src/content/docs/v*/ are committed.
+src/content/docs/docs/
+# The ws checkout the CI build reads the Docs source from.
+.ws-src/

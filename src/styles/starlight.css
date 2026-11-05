@@ -1,0 +1,39 @@
+/* Tints Starlight with the site's tokens instead of replacing its theme. */
+
+:root,
+::backdrop {
+  --sl-font: var(--ws-font-sans);
+  --sl-font-mono: var(--ws-font-mono);
+}
+
+:root[data-theme='dark'] {
+  --sl-color-accent-low: var(--ws-accent-soft);
+  --sl-color-accent: var(--ws-accent);
+  --sl-color-accent-high: #aff5b4;
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #e6edf3;
+  --sl-color-gray-2: #c9d1d9;
+  --sl-color-gray-3: #9198a1;
+  --sl-color-gray-4: #656c76;
+  --sl-color-gray-5: #30363d;
+  --sl-color-gray-6: #161b22;
+  --sl-color-black: #0d1117;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: var(--ws-accent-soft);
+  --sl-color-accent: var(--ws-accent);
+  --sl-color-accent-high: #0b3d1a;
+}
+
+.site-title {
+  font-family: var(--ws-font-mono);
+  font-weight: 700;
+  color: var(--ws-accent);
+}
+
+.sl-markdown-content :is(h1, h2, h3, h4),
+h1#_top {
+  font-family: var(--ws-font-mono);
+  letter-spacing: -0.01em;
+}

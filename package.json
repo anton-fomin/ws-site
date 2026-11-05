@@ -1,0 +1,28 @@
+{
+  "name": "ws-site",
+  "type": "module",
+  "private": true,
+  "packageManager": "pnpm@12.9.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "fetch-docs": "node scripts/fetch-docs.mjs",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "node --test 'scripts/*.test.mjs'"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.42.8",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "astro": "^7.4.5",
+    "starlight-versions": "^0.10.2"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "typescript": "^6.0.3"
+  }
+}

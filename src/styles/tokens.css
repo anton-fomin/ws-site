@@ -1,0 +1,55 @@
+/* The palette and type of the site, shared by the Landing page and the Docs.
+   Dark first: the dark values are the defaults, light overrides them. */
+
+:root {
+  --ws-font-sans: 'Inter Variable', 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --ws-font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+  --ws-bg: #0d1117;
+  --ws-bg-raised: #161b22;
+  --ws-bg-inset: #010409;
+  --ws-border: #30363d;
+  --ws-text: #e6edf3;
+  --ws-text-muted: #9198a1;
+  --ws-accent: #3fb950;
+  --ws-accent-strong: #56d364;
+  --ws-accent-soft: #0f2e18;
+  --ws-on-accent: #04260f;
+  --ws-term-blue: #79c0ff;
+  --ws-term-yellow: #e3b341;
+  --ws-term-purple: #d2a8ff;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --ws-bg: #ffffff;
+    --ws-bg-raised: #f6f8fa;
+    --ws-bg-inset: #eff2f5;
+    --ws-border: #d1d9e0;
+    --ws-text: #1f2328;
+    --ws-text-muted: #59636e;
+    --ws-accent: #1a7f37;
+    --ws-accent-strong: #116329;
+    --ws-accent-soft: #dafbe1;
+    --ws-on-accent: #ffffff;
+    --ws-term-blue: #0550ae;
+    --ws-term-yellow: #7d4e00;
+    --ws-term-purple: #6639ba;
+  }
+}
+
+:root[data-theme='light'] {
+  --ws-bg: #ffffff;
+  --ws-bg-raised: #f6f8fa;
+  --ws-bg-inset: #eff2f5;
+  --ws-border: #d1d9e0;
+  --ws-text: #1f2328;
+  --ws-text-muted: #59636e;
+  --ws-accent: #1a7f37;
+  --ws-accent-strong: #116329;
+  --ws-accent-soft: #dafbe1;
+  --ws-on-accent: #ffffff;
+  --ws-term-blue: #0550ae;
+  --ws-term-yellow: #7d4e00;
+  --ws-term-purple: #6639ba;
+}

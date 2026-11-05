@@ -1,0 +1,419 @@
+---
+import Base from '../layouts/Base.astro'
+
+const install = 'curl -fsSL https://raw.githubusercontent.com/anton-fomin/ws/main/install.sh | sh'
+
+const features = [
+  {
+    title: 'tmux or herdr',
+    text: 'Each switch opens a session over the branch directory: one window per repository, plus one for the branch directory itself.',
+    href: '/docs/integrations/multiplexers/',
+  },
+  {
+    title: 'Pick and jump',
+    text: '`ws pick` lists checked-out and remote branches in fzf; every worktree is registered with zoxide, so `z feature-x` gets you there.',
+    href: '/docs/integrations/fzf-zoxide/',
+  },
+  {
+    title: 'Local files',
+    text: 'Keep `.env`, `.npmrc` and editor settings once in `local/`. They are linked or copied into every new worktree.',
+    href: '/docs/integrations/local-files/',
+  },
+  {
+    title: 'Dependencies, seeded',
+    text: 'yarn, pnpm, npm and uv install held to the lockfile; yarn and pnpm start from hard links of the branch you came from.',
+    href: '/docs/integrations/package-managers/',
+  },
+  {
+    title: 'ws run',
+    text: 'Run `dev`, `test` or `lint` in every repository at once, from justfiles, Taskfiles or package.json, with prefixed output and logs.',
+    href: '/docs/tasks/',
+  },
+  {
+    title: 'Setup commands',
+    text: 'Per-repository setup runs once per worktree, with `{branch}`, `{worktree}` and `{env:NAME}` filled in.',
+    href: '/docs/configuration/',
+  },
+]
+
+/** Renders `code` spans in the short feature texts. */
+const inlineCode = (text: string) =>
+  text.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!).replace(/`([^`]+)`/g, '<code>$1</code>')
+---
+
+<Base
+  title="ws: one branch, every repo"
+  description="ws checks a branch out in every repository of a project, runs each repo's setup, and lays the result out in tmux or herdr."
+>
+  <section class="hero container">
+    <div class="hero__text">
+      <h1>One branch, every repo.</h1>
+      <p class="lede">
+        One command checks a branch out in every repository of a project, runs each repo's setup, and lays the result
+        out in tmux or herdr.
+      </p>
+      <div class="install" data-copy={install}>
+        <code><span class="prompt">$</span> {install}</code>
+        <button type="button" class="install__copy" aria-label="Copy the install command">copy</button>
+      </div>
+      <p class="hero__actions">
+        <a class="button button--primary" href="/docs/getting-started/">Get started</a>
+        <a class="button" href="https://github.com/anton-fomin/ws">GitHub</a>
+      </p>
+    </div>
+    <figure class="terminal hero__demo">
+      <div class="terminal__bar" aria-hidden="true"><span></span><span></span><span></span></div>
+      <video
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        poster="/demo/poster.png"
+        width="960"
+        height="600"
+        aria-label="ws init, ws switch feature/login opening a tmux session, and ws run dev in both repositories"
+      >
+        <source src="/demo/demo.webm" type="video/webm" />
+      </video>
+    </figure>
+  </section>
+
+  <section class="section container">
+    <h2>The problem</h2>
+    <div class="two-col">
+      <div>
+        <p>
+          A feature touches the API and the web app. So you <code>git switch</code> in one repository, then the other,
+          then you remember the infrastructure repo. Halfway through a review someone needs a hotfix, and every one of
+          them has to move again.
+        </p>
+        <p>
+          Worktrees help, but one repository at a time: each new one starts without your <code>.env</code>,
+          without <code>node_modules</code>, and without the setup steps nobody wrote down.
+        </p>
+      </div>
+      <div class="terminal">
+        <pre><code><span class="dim"># without ws, for every branch</span>
+cd ~/src/api   && git switch -c feature/login
+cd ~/src/web   && git switch -c feature/login
+cd ~/src/infra && git switch -c feature/login
+cp ../.env.backup .env   <span class="dim"># which one was it?</span>
+pnpm install             <span class="dim"># again</span></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="section container">
+    <h2>How it works</h2>
+    <p class="section__lede">
+      A workspace is a directory with a <code>ws.yaml</code>. It holds one bare clone per repository and one branch
+      directory per branch, with a worktree of every repository inside. Which branch is where is always read back from
+      git.
+    </p>
+    <div class="terminal layout">
+      <pre><code><span class="dir">acme/</span>
+  <span class="file">ws.yaml</span>                <span class="dim"># repositories, setup, overrides</span>
+  <span class="dir">.bare/</span>api.git  <span class="dir">.bare/</span>web.git   <span class="dim"># one bare clone per repository</span>
+  <span class="dir">local/</span>api/.env         <span class="dim"># untracked files for every worktree</span>
+  <span class="dir">main/</span>api   <span class="dir">main/</span>web       <span class="dim"># a branch directory per branch…</span>
+  <span class="dir accent">feature-login/</span>api      <span class="dim"># …with one worktree per repository</span>
+  <span class="dir accent">feature-login/</span>web</code></pre>
+    </div>
+    <p>
+      <code>ws switch feature/login</code> creates the worktrees, places your local files, installs dependencies, runs
+      each repository's setup and opens the session. <a href="/docs/layout/">More on the layout →</a>
+    </p>
+  </section>
+
+  <section class="section container">
+    <h2>What comes with a switch</h2>
+    <ul class="features">
+      {
+        features.map((feature) => (
+          <li class="feature">
+            <h3>
+              <a href={feature.href}>{feature.title}</a>
+            </h3>
+            <p set:html={inlineCode(feature.text)} />
+          </li>
+        ))
+      }
+    </ul>
+    <p class="note">
+      <code>git</code> is the only requirement. Every integration turns on when its program is installed, and none of them
+      can fail a switch.
+    </p>
+  </section>
+
+  <section class="section container">
+    <h2>Works with coding agents</h2>
+    <div class="two-col">
+      <div>
+        <p>
+          Type <code>/ws &lt;task&gt;</code> in Claude Code, OpenCode or pi. The agent picks a branch name from your
+          repositories' conventions, runs <code>ws switch</code>, and starts a fresh agent on the task in the new
+          workspace's session.
+        </p>
+        <p>
+          A second skill teaches every agent inside a workspace how to find its way around: <code>ws status</code>,
+          each repository's own instructions, <code>ws run</code>
+          for tasks. <a href="/docs/coding-agents/">Coding agents →</a>
+        </p>
+      </div>
+      <div class="terminal">
+        <pre><code><span class="prompt">$</span> npx skills add anton-fomin/ws -g -a claude-code opencode</code></pre>
+      </div>
+    </div>
+  </section>
+
+  <section class="section container">
+    <h2>Install</h2>
+    <div class="install-options">
+      <div>
+        <h3>Linux and macOS</h3>
+        <div class="terminal"><pre><code>curl -fsSL https://raw.githubusercontent.com/anton-fomin/ws/main/install.sh | sh</code></pre></div>
+        <p>A prebuilt binary in <code>~/.local/bin</code>, checked against the release's checksum. No sudo.</p>
+      </div>
+      <div>
+        <h3>Nix</h3>
+        <div class="terminal"><pre><code>nix profile add github:anton-fomin/ws</code></pre></div>
+        <p>Or as a flake input, system-wide or in a project's dev shell.</p>
+      </div>
+    </div>
+    <p>
+      Then add the shell wrapper so <code>ws switch</code> also changes directory, and shell
+      completion. <a href="/docs/getting-started/">Getting started →</a>
+    </p>
+  </section>
+</Base>
+
+<script>
+  for (const box of document.querySelectorAll<HTMLElement>('[data-copy]')) {
+    const button = box.querySelector('button')
+    button?.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(box.dataset.copy ?? '')
+        button.textContent = 'copied'
+      } catch {
+        button.textContent = 'press ctrl+c'
+        getSelection()?.selectAllChildren(box.querySelector('code')!)
+      }
+      setTimeout(() => (button.textContent = 'copy'), 2000)
+    })
+  }
+</script>
+
+<style>
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    padding-top: 3.5rem;
+    padding-bottom: 1.5rem;
+  }
+
+  @media (min-width: 60rem) {
+    .hero {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      align-items: center;
+      padding-top: 5rem;
+    }
+  }
+
+  h1 {
+    font-size: clamp(2rem, 9vw, 3.5rem);
+    margin: 0 0 1rem;
+  }
+
+  .lede {
+    font-size: 1.2rem;
+    color: var(--ws-text-muted);
+    margin: 0 0 1.5rem;
+  }
+
+  .install {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: var(--ws-bg-inset);
+    border: 1px solid var(--ws-border);
+    border-radius: 6px;
+    padding: 0.6rem 0.6rem 0.6rem 1rem;
+    max-width: 100%;
+  }
+
+  .install code {
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    font-size: 0.85rem;
+    background: none;
+    border: 0;
+    padding: 0;
+  }
+
+  .install__copy {
+    flex: none;
+    font: inherit;
+    font-family: var(--ws-font-mono);
+    font-size: 0.8rem;
+    color: var(--ws-text);
+    background: var(--ws-bg-raised);
+    border: 1px solid var(--ws-border);
+    border-radius: 4px;
+    padding: 0.3rem 0.6rem;
+    cursor: pointer;
+  }
+
+  .install__copy:hover {
+    border-color: var(--ws-accent);
+  }
+
+  .prompt {
+    color: var(--ws-accent);
+    user-select: none;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 1.5rem 0 0;
+  }
+
+  .hero__demo {
+    margin: 0;
+  }
+
+  .hero__demo video {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: var(--ws-bg-inset);
+  }
+
+  .section {
+    padding-top: 4rem;
+  }
+
+  .section h2 {
+    font-size: 1.75rem;
+    margin: 0 0 1.25rem;
+  }
+
+  .section h2::before {
+    content: '## ';
+    color: var(--ws-accent);
+  }
+
+  .section__lede {
+    max-width: 44rem;
+  }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    align-items: start;
+  }
+
+  @media (min-width: 60rem) {
+    .two-col {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 2.5rem;
+    }
+  }
+
+  .two-col p:first-child {
+    margin-top: 0;
+  }
+
+  .dim {
+    color: var(--ws-text-muted);
+  }
+
+  .dir {
+    color: var(--ws-term-blue);
+  }
+
+  .dir.accent {
+    color: var(--ws-accent);
+  }
+
+  .file {
+    color: var(--ws-term-yellow);
+  }
+
+  .layout {
+    margin: 1.5rem 0;
+  }
+
+  .features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+  }
+
+  .feature {
+    border: 1px solid var(--ws-border);
+    border-radius: 8px;
+    padding: 1.25rem;
+    background: var(--ws-bg-raised);
+  }
+
+  .feature:hover {
+    border-color: var(--ws-accent);
+  }
+
+  .feature h3 {
+    font-size: 1.05rem;
+    margin: 0 0 0.5rem;
+  }
+
+  .feature h3 a {
+    color: var(--ws-text);
+    text-decoration: none;
+  }
+
+  .feature h3 a::after {
+    content: ' →';
+    color: var(--ws-accent);
+  }
+
+  .feature p {
+    margin: 0;
+    color: var(--ws-text-muted);
+    font-size: 0.95rem;
+  }
+
+  .note {
+    color: var(--ws-text-muted);
+  }
+
+  .install-options {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  @media (min-width: 60rem) {
+    .install-options {
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    }
+  }
+
+  .install-options h3 {
+    font-size: 1.05rem;
+    margin: 0 0 0.75rem;
+  }
+
+  .install-options p {
+    color: var(--ws-text-muted);
+    font-size: 0.95rem;
+  }
+</style>

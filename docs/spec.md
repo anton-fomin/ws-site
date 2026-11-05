@@ -1,0 +1,128 @@
+# ws-site specification
+
+The public website for `ws` at **https://ws.fomin.space**, built from this repository (`anton-fomin/ws-site`). Terms in **bold** are defined in [GLOSSARY.md](../GLOSSARY.md); decisions with real trade-offs are in [adr/](adr/).
+
+## Purpose and audience
+
+`ws` is a personal open-source project of Anton Fomin, licensed MIT OR Apache-2.0. mühlemann+popp is not involved, and the site carries no m+p branding.
+
+1. **Newcomers** come first. They work across several repositories per project and have never heard of `ws`. The **Landing page** has to convince them and get them to install it.
+2. **Users** come second. The **Docs** are where they look things up.
+
+Coding-agent support is a section of the Landing page and a Docs page. It is not a separate track.
+
+The site is in English only.
+
+## Structure
+
+| Path | What |
+|---|---|
+| `/` | Landing page |
+| `/docs/…` | Docs, **Latest** version |
+| `/v0.N/docs/…` | Older Docs versions (**Docs snapshots**) |
+| `/404` | Custom not-found page |
+
+### Landing page
+
+The Landing page copy lives in this repository. Its sections, in order:
+
+1. **Hero.** The headline is "One branch, every repo." The subline is "One command checks a branch out in every repository of a project, runs each repo's setup, and lays the result out in tmux or herdr." Below it are the install command with a copy button and the terminal demo.
+2. **The problem.** `git switch` across api/web/infra, and the `.env` lost along the way.
+3. **How it works.** The on-disk layout (`.bare/`, `main/`, `feature-x/`) as a diagram.
+4. **Features.** A grid with one card each for: multiplexers (tmux/herdr), picker and zoxide, local files, package-manager seeding, `ws run` tasks, and setup commands.
+5. **Works with coding agents.** The skill and `npx skills add anton-fomin/ws -g -a claude-code opencode`.
+6. **Install options.** curl, Nix and by hand, kept short, each linking to Docs › Getting started.
+7. **Footer.** GitHub, license, the Latest version, and "by Anton Fomin" linking to https://fomin.space.
+
+The install command is
+`curl -fsSL https://raw.githubusercontent.com/anton-fomin/ws/main/install.sh | sh`.
+The site does **not** serve `install.sh` itself.
+
+### Terminal demo
+
+- It is a VHS tape committed in this repository and rendered to WebM by hand when `ws` changes visibly, roughly once per release. It is not rendered in CI.
+- A static poster frame shows until the video loads.
+- The tape runs against a sample workspace that a script in this repository builds from local bare repos `api` and `web`. Each has a `justfile` with a `dev` task. Recording needs no network.
+- The tape shows `ws init` → `ws switch feature/login` → the tmux windows → `ws run dev` with prefixed output.
+
+### Docs
+
+The **Docs source** is `docs/*.md` in `anton-fomin/ws`, which is the only place Docs are written ([ADR 0001](adr/0001-docs-source-lives-in-ws-repo.md)). `docs/agents/` there is for coding agents and is not published. The pages are listed, in sidebar order, in `src/docs-pages.mjs`, and the build fails when that list and the Docs source disagree:
+
+- `getting-started`: install, shell wrapper, first workspace
+- `layout`
+- `commands`
+- `configuration`, including setup placeholders
+- `integrations/`: `multiplexers`, `fzf-zoxide`, `local-files`, `package-managers`
+- `tasks`, including logs
+- `shell-completion`
+- `coding-agents`
+
+"Edit this page" links to the file in `ws/docs/` on `main`.
+
+### Versioning
+
+The details are in [ADR 0003](adr/0003-versioned-docs-with-committed-snapshots.md):
+
+- There is one **Docs version** per minor release of `ws`. A patch release replaces its minor's version.
+- Latest is fetched from the newest `ws` release tag at build time.
+- Each older minor is a Docs snapshot committed in this repository and created by the `starlight-versions` plugin. Snapshots are never edited by hand.
+- Version slugs are spelled like the tags: `v0.8`.
+- The **Version switcher**, an "outdated version" banner on older versions, and search filtered to the version being read all come from the plugin. The plugin needs at least one Docs snapshot, so the Version switcher only appears once a second minor release exists.
+- Nothing unreleased is published. There is no "next" version built from `main`.
+- The first Docs version is the `ws` release that introduces `docs/`. Earlier releases get no Docs version and no link.
+- Every version is kept forever.
+
+## Stack
+
+- **Astro + Starlight** ([ADR 0002](adr/0002-astro-starlight.md)): the Landing page is a custom Astro page, and the Docs are Starlight.
+- **`starlight-versions`** handles versioning, and Starlight's built-in **Pagefind** handles search.
+- **Toolchain:** pnpm, plus a Nix flake dev shell providing `node`, `pnpm` and `vhs`.
+
+## Design
+
+- Dark-first, with a light mode, in a terminal-native style.
+- The Starlight theme is tinted to match, not replaced.
+- **Type:** JetBrains Mono for the wordmark, headings and code, and Inter for body text. Both are self-hosted via `@fontsource`.
+- **Colour:** a single green accent, `#3fb950`.
+- **Logo:** none beyond the monospace wordmark `ws`.
+- **Social preview:** a static image with the wordmark and tagline.
+- **Third parties:** the site makes no requests to third parties, so there are no Google Fonts, no analytics and no cookie banner. Usage signal comes from GitHub's repository traffic insights and release download counts.
+
+## Build and deploy
+
+- A GitHub Actions workflow in this repository builds the site and publishes it with `actions/deploy-pages`. There is no `gh-pages` branch.
+- **Triggers:**
+  - A `ws` release: the `ws` release workflow sends a `repository_dispatch` carrying the tag, authenticated by a fine-grained token scoped to `ws-site` (contents read/write) and stored as a secret in `ws`.
+  - A push to `main` of this repository.
+  - A manual `workflow_dispatch`.
+  - Every run processes the newest `ws` release (the dispatched or named tag, otherwise the latest GitHub release), so a release run dropped from the queue is caught up by the next one. Before the first release with `docs/`, a run builds nothing.
+  - There is no scheduled rebuild.
+- **On a release that starts a new minor**, the workflow:
+  1. archives the outgoing Latest as a Docs snapshot with the plugin,
+  2. commits it to `main`,
+  3. builds with the new tag's Docs source as Latest.
+- **Domain:**
+  - A `CNAME` record at Yandex DNS points `ws` → `anton-fomin.github.io`.
+  - The custom domain is set on the Pages site, with "Enforce HTTPS" turned on.
+  - `fomin.space` is verified in the GitHub account settings, so no one else can claim it on Pages.
+
+## Launch order
+
+Nothing is public at `ws.fomin.space` until step 3.
+
+1. **In `ws`:**
+   - Split the README into `docs/*.md`.
+   - Shrink the README to a pitch, a quick example, the install line and links to each Docs page.
+   - Move "Development" into `CONTRIBUTING.md`.
+   - Add the `repository_dispatch` step to the release workflow.
+   - Commit the license files.
+   - Point the hints in `ws init` and `install.sh` at the site.
+2. **In `ws-site`:** build the site and the deploy workflow.
+3. **Release `ws` v0.8.0.** The dispatch triggers the first build with Docs.
+4. **DNS and GitHub:** add the CNAME record at Yandex, verify the domain, and set the custom domain on Pages.
+
+Steps 1 and 2 are done. Before step 3, set the repository settings:
+
+- In `ws-site`, set Pages › Source to "GitHub Actions".
+- In `ws`, create a fine-grained token with contents read/write on `ws-site` only, and store it in `ws` as the secret `WS_SITE_TOKEN`. Without it, the release skips the dispatch, and the site can be updated with a manual run of the Deploy workflow naming the tag.

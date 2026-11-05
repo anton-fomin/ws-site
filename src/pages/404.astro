@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro'
+---
+
+<Base title="Not found · ws" description="There is no page at this address.">
+  <section class="container not-found">
+    <div class="terminal">
+      <pre><code><span class="prompt">$</span> ws path <span id="path">this-page</span>
+<span class="error">error:</span> no branch directory for this page</code></pre>
+    </div>
+    <h1>Page not found</h1>
+    <p>
+      The page may have moved with a new release.
+      Try the <a href="/docs/getting-started/">Docs</a> or the <a href="/">start page</a>.
+    </p>
+  </section>
+</Base>
+
+<script>
+  const path = document.getElementById('path')
+  if (path) path.textContent = location.pathname
+</script>
+
+<style>
+  .not-found {
+    max-width: 44rem;
+    padding-top: 4rem;
+  }
+
+  h1 {
+    font-size: 2rem;
+    margin: 2rem 0 0.5rem;
+  }
+
+  .prompt {
+    color: var(--ws-accent);
+  }
+
+  .error {
+    color: #f85149;
+    font-weight: 700;
+  }
+</style>

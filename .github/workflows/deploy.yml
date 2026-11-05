@@ -1,0 +1,154 @@
+name: Deploy
+
+# Builds the site and publishes it to GitHub Pages (ws.fomin.space).
+#
+# - repository_dispatch `ws-release` is sent by the ws release workflow with
+#   the released tag. A new patch replaces Latest; a new minor first archives
+#   the outgoing Latest as a Docs snapshot and commits it (docs/adr/0003).
+# - A push or a manual run without a tag processes the newest ws release, so a
+#   release run that was dropped from the queue is caught up by the next run.
+#   Before the first release with docs/ it builds nothing.
+
+on:
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [ws-release]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: ws release tag to process (empty rebuilds Latest)
+        required: false
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+# One build at a time. GitHub keeps only the newest pending run, so a queued
+# release run can be replaced by a later one; every run therefore processes the
+# newest release rather than only the tag of its own event.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  ASTRO_TELEMETRY_DISABLED: 1
+
+defaults:
+  run:
+    # -eo pipefail, so a failing command before a pipe fails the step.
+    shell: bash
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    outputs:
+      build: ${{ steps.plan.outputs.build }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm test
+
+      - name: Which release
+        id: release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_TAG: ${{ github.event.client_payload.tag || github.event.inputs.tag }}
+        run: |
+          tag=${EVENT_TAG:-$(gh release view --repo anton-fomin/ws --json tagName --jq .tagName)}
+          if gh api "repos/anton-fomin/ws/contents/docs/getting-started.md?ref=$tag" --silent 2>/dev/null; then
+            echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::ws $tag has no docs/; rebuilding Latest as it is."
+            echo "tag=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Plan
+        id: plan
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+        run: node scripts/plan-release.mjs "$TAG" | tee -a "$GITHUB_OUTPUT"
+
+      # The plugin archives whatever is Latest when a build sees a version
+      # without a snapshot, so the outgoing release's docs go in first.
+      - name: Check out the outgoing release
+        if: steps.plan.outputs.archive_tag
+        uses: actions/checkout@v7
+        with:
+          repository: anton-fomin/ws
+          ref: ${{ steps.plan.outputs.archive_tag }}
+          path: .ws-src
+
+      - name: Archive ${{ steps.plan.outputs.archive_slug }}
+        if: steps.plan.outputs.archive_tag
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          pnpm fetch-docs --from .ws-src --tag "${{ steps.plan.outputs.archive_tag }}"
+          node scripts/plan-release.mjs --write "$TAG"
+          pnpm build
+          test -d "src/content/docs/${{ steps.plan.outputs.archive_slug }}"
+          rm -rf .ws-src
+
+      - name: Nothing to build yet
+        if: ${{ !steps.plan.outputs.build }}
+        run: echo "::notice::No ws release with docs/ yet; dispatch a release tag to publish the first one."
+
+      - name: Check out ${{ steps.plan.outputs.build }}
+        if: steps.plan.outputs.build
+        uses: actions/checkout@v7
+        with:
+          repository: anton-fomin/ws
+          ref: ${{ steps.plan.outputs.build }}
+          path: .ws-src
+
+      - name: Build
+        if: steps.plan.outputs.build
+        env:
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          pnpm fetch-docs --from .ws-src --tag "${{ steps.plan.outputs.build }}"
+          node scripts/plan-release.mjs --write "$TAG"
+          pnpm check
+          pnpm build
+
+      - name: Commit versions.json and Docs snapshots
+        if: steps.plan.outputs.build
+        run: |
+          # src/content/docs/docs/ (Latest) is ignored, so only snapshots are added.
+          for path in versions.json src/content src/assets; do
+            if [ -e "$path" ]; then git add -- "$path"; fi
+          done
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Docs for ws ${{ steps.plan.outputs.build }}"
+          # A push to main may have landed during the build.
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - uses: actions/upload-pages-artifact@v5
+        if: steps.plan.outputs.build
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    if: needs.build.outputs.build
+    runs-on: ubuntu-24.04
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,68 @@
+---
+// The frame of the pages outside the Docs: the Landing page and the 404 page.
+import '@fontsource-variable/inter'
+import '@fontsource/jetbrains-mono/400.css'
+import '@fontsource/jetbrains-mono/700.css'
+import '../styles/tokens.css'
+import '../styles/base.css'
+
+import versions from '../../versions.json'
+
+interface Props {
+  title: string
+  description: string
+}
+
+const { title, description } = Astro.props
+const canonical = new URL(Astro.url.pathname, Astro.site)
+const og = new URL('/og.png', Astro.site)
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={og} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="color-scheme" content="dark light" />
+    <script is:inline>
+      // Follow the theme chosen in the Docs; otherwise the system's.
+      try {
+        const theme = localStorage.getItem('starlight-theme')
+        if (theme === 'dark' || theme === 'light') document.documentElement.dataset.theme = theme
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container site-header__inner">
+        <a class="wordmark" href="/" aria-label="ws home">ws</a>
+        <nav aria-label="Main">
+          <a href="/docs/getting-started/">Docs</a>
+          <a href="https://github.com/anton-fomin/ws">GitHub</a>
+        </nav>
+      </div>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <div class="container site-footer__inner">
+        <span class="wordmark wordmark--small">ws</span>
+        {versions.latest && <a href={`https://github.com/anton-fomin/ws/releases/tag/${versions.latest}`}>{versions.latest}</a>}
+        <a href="https://github.com/anton-fomin/ws">GitHub</a>
+        <a href="https://github.com/anton-fomin/ws#license">MIT OR Apache-2.0</a>
+        <span>by <a href="https://fomin.space">Anton Fomin</a></span>
+      </div>
+    </footer>
+  </body>
+</html>

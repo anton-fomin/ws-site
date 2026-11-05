@@ -1,0 +1,201 @@
+/* The Landing page and the 404 page. The Docs are styled by Starlight. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ws-bg);
+  color: var(--ws-text);
+  font-family: var(--ws-font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+}
+
+a {
+  color: var(--ws-accent);
+  text-underline-offset: 0.2em;
+}
+
+a:hover {
+  color: var(--ws-accent-strong);
+}
+
+:focus-visible {
+  outline: 2px solid var(--ws-accent);
+  outline-offset: 2px;
+}
+
+code,
+pre,
+kbd {
+  font-family: var(--ws-font-mono);
+  font-size: 0.9em;
+}
+
+:not(pre) > code {
+  background: var(--ws-bg-raised);
+  border: 1px solid var(--ws-border);
+  border-radius: 4px;
+  padding: 0.05em 0.35em;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--ws-font-mono);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.container {
+  width: 100%;
+  max-width: 68rem;
+  margin: 0 auto;
+  padding-inline: 1rem;
+}
+
+@media (min-width: 48rem) {
+  .container {
+    padding-inline: 2rem;
+  }
+}
+
+.wordmark {
+  font-family: var(--ws-font-mono);
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: var(--ws-accent);
+  text-decoration: none;
+}
+
+.wordmark::before {
+  content: '$ ';
+  color: var(--ws-text-muted);
+  font-weight: 400;
+}
+
+.wordmark--small {
+  font-size: 1rem;
+}
+
+/* Header and footer */
+
+.site-header {
+  border-bottom: 1px solid var(--ws-border);
+}
+
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 4rem;
+}
+
+.site-header nav {
+  display: flex;
+  gap: 1.5rem;
+  font-family: var(--ws-font-mono);
+  font-size: 0.95rem;
+}
+
+.site-header nav a {
+  color: var(--ws-text);
+  text-decoration: none;
+}
+
+.site-header nav a:hover {
+  color: var(--ws-accent);
+}
+
+.site-footer {
+  border-top: 1px solid var(--ws-border);
+  margin-top: 4rem;
+  padding: 2rem 0;
+  color: var(--ws-text-muted);
+  font-size: 0.9rem;
+}
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1.5rem;
+}
+
+.site-footer a {
+  color: var(--ws-text-muted);
+}
+
+.site-footer a:hover {
+  color: var(--ws-accent);
+}
+
+/* Terminal-like blocks */
+
+.terminal {
+  background: var(--ws-bg-inset);
+  border: 1px solid var(--ws-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.terminal__bar {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.6rem 0.8rem;
+  border-bottom: 1px solid var(--ws-border);
+  background: var(--ws-bg-raised);
+}
+
+.terminal__bar span {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: var(--ws-border);
+}
+
+.terminal pre {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  line-height: 1.55;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.1rem;
+  border-radius: 6px;
+  border: 1px solid var(--ws-border);
+  font-family: var(--ws-font-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--ws-text);
+  background: var(--ws-bg-raised);
+}
+
+.button:hover {
+  border-color: var(--ws-accent);
+  color: var(--ws-text);
+}
+
+.button--primary {
+  background: var(--ws-accent);
+  border-color: var(--ws-accent);
+  color: var(--ws-on-accent);
+}
+
+.button--primary:hover {
+  background: var(--ws-accent-strong);
+  color: var(--ws-on-accent);
+}
