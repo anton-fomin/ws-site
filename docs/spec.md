@@ -35,7 +35,7 @@ The Landing page copy lives in this repository. Its sections, in order:
 7. **Footer.** GitHub, license, the Latest version, and "by Anton Fomin" linking to https://fomin.space.
 
 The install command is
-`curl -fsSL https://raw.githubusercontent.com/anton-fomin/ws/main/install.sh | sh`.
+`curl -fsSL https://github.com/anton-fomin/ws/releases/latest/download/install.sh | sh`.
 The site does **not** serve `install.sh` itself.
 
 ### Terminal demo

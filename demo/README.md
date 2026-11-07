@@ -18,3 +18,13 @@ PATH="$PWD/../ws/target/release:$PATH" nix develop -c vhs demo/demo.tape
 ```
 
 JetBrains Mono (or its Nerd Font build) has to be installed as a system font for the recording.
+
+The README of `ws` shows a short GIF, `docs/demo.gif` in that repository, cut from the WebM
+(`ws switch` to `ws run dev`, 10 frames a second, 720 pixels wide, under 200 KB). Re-cut it
+whenever the video is re-recorded:
+
+```
+ffmpeg -ss 7 -t 9.5 -i public/demo/demo.webm \
+  -vf "fps=10,scale=720:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=48[p];[b][p]paletteuse=dither=none" \
+  -loop 0 ../ws/docs/demo.gif
+```
