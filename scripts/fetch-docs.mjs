@@ -31,4 +31,13 @@ for (const file of published) {
   await fs.mkdir(path.dirname(path.join(target, file)), { recursive: true })
   await fs.writeFile(path.join(target, file), page)
 }
+// The JSON Schema of ws.yaml, published at /schema/ws.json for editors. Releases
+// older than the schema have none, and then the site simply has no schema yet.
+const schema = path.resolve(values.from, 'schema/ws.schema.json')
+const schemaTarget = path.resolve('public/schema/ws.json')
+await fs.rm(path.dirname(schemaTarget), { recursive: true, force: true })
+if (await fs.stat(schema).then(() => true, () => false)) {
+  await fs.mkdir(path.dirname(schemaTarget), { recursive: true })
+  await fs.copyFile(schema, schemaTarget)
+}
 console.log(`wrote ${published.length} pages from ${source} (${values.tag}) to ${target}`)
