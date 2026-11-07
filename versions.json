@@ -1,4 +1,6 @@
 {
-  "latest": "v0.8.0",
-  "archived": []
+  "latest": "v0.9.0",
+  "archived": [
+    "v0.8"
+  ]
 }
