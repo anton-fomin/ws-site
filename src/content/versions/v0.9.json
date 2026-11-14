@@ -1,0 +1,25 @@
+{
+  "sidebar": [
+    "docs/getting-started",
+    "docs/layout",
+    "docs/commands",
+    "docs/configuration",
+    {
+      "label": "Integrations",
+      "items": [
+        {
+          "label": "Overview",
+          "slug": "docs/integrations"
+        },
+        "docs/integrations/multiplexers",
+        "docs/integrations/fzf-zoxide",
+        "docs/integrations/local-files",
+        "docs/integrations/package-managers"
+      ]
+    },
+    "docs/tasks",
+    "docs/shell-completion",
+    "docs/coding-agents"
+  ],
+  "excluded": []
+}
