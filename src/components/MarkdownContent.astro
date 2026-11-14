@@ -1,0 +1,13 @@
+---
+import DefaultMarkdownContent from '@astrojs/starlight/components/MarkdownContent.astro'
+import CopyCommand from './CopyCommand.astro'
+import { splitShellCommands } from '../../scripts/shell-commands.mjs'
+
+const parts = splitShellCommands(await Astro.slots.render('default'))
+---
+
+<DefaultMarkdownContent>
+  {parts.map(part => 'command' in part
+    ? <CopyCommand command={part.command} />
+    : <Fragment set:html={part.html} />)}
+</DefaultMarkdownContent>

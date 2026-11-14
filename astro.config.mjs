@@ -2,10 +2,12 @@
 import { readFileSync } from 'node:fs'
 
 import starlight from '@astrojs/starlight'
+import { satteri } from '@astrojs/markdown-satteri'
 import { defineConfig } from 'astro/config'
 import starlightVersions from 'starlight-versions'
 
 import { minorSlug } from './scripts/versions.mjs'
+import { shellCommands } from './scripts/shell-commands.mjs'
 import { docsSidebar, pageURL } from './src/docs-pages.mjs'
 
 /** @type {import('./scripts/versions.mjs').VersionsState} */
@@ -28,6 +30,7 @@ const sidebar = docsSidebar.map((entry) =>
 export default defineConfig({
   site: 'https://ws.fomin.space',
   redirects: { '/docs': '/docs/getting-started/' },
+  markdown: { processor: satteri({ mdastPlugins: [shellCommands] }) },
   integrations: [
     starlight({
       title: 'ws',
@@ -41,6 +44,7 @@ export default defineConfig({
         './src/styles/starlight.css',
       ],
       sidebar,
+      components: { MarkdownContent: './src/components/MarkdownContent.astro' },
       // The site has its own not-found page, styled like the Landing page.
       disable404Route: true,
       head: [

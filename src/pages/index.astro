@@ -1,44 +1,8 @@
 ---
 import Base from '../layouts/Base.astro'
+import CopyCommand from '../components/CopyCommand.astro'
 
 const install = 'curl -fsSL https://github.com/anton-fomin/ws/releases/latest/download/install.sh | sh'
-
-const features = [
-  {
-    title: 'tmux or herdr',
-    text: 'Each switch opens a session over the branch directory: one window per repository, plus one for the branch directory itself.',
-    href: '/docs/integrations/multiplexers/',
-  },
-  {
-    title: 'Pick and jump',
-    text: '`ws pick` lists checked-out and remote branches in fzf; every worktree is registered with zoxide, so `z feature-x` gets you there.',
-    href: '/docs/integrations/fzf-zoxide/',
-  },
-  {
-    title: 'Local files',
-    text: 'Keep `.env`, `.npmrc` and editor settings once in `local/`. They are linked or copied into every new worktree.',
-    href: '/docs/integrations/local-files/',
-  },
-  {
-    title: 'Dependencies, seeded',
-    text: 'yarn, pnpm, npm and uv install held to the lockfile; yarn and pnpm start from hard links of the branch you came from.',
-    href: '/docs/integrations/package-managers/',
-  },
-  {
-    title: 'ws run',
-    text: 'Run `dev`, `test` or `lint` in every repository at once, from justfiles, Taskfiles or package.json, with prefixed output and logs.',
-    href: '/docs/tasks/',
-  },
-  {
-    title: 'Setup commands',
-    text: 'Per-repository setup runs once per worktree, with `{branch}`, `{worktree}` and `{env:NAME}` filled in.',
-    href: '/docs/configuration/',
-  },
-]
-
-/** Renders `code` spans in the short feature texts. */
-const inlineCode = (text: string) =>
-  text.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c]!).replace(/`([^`]+)`/g, '<code>$1</code>')
 ---
 
 <Base
@@ -52,10 +16,7 @@ const inlineCode = (text: string) =>
         One command checks a branch out in every repository of a project, runs each repo's setup, and lays the result
         out in tmux or herdr.
       </p>
-      <div class="install" data-copy={install}>
-        <code><span class="prompt">$</span> {install}</code>
-        <button type="button" class="install__copy" aria-label="Copy the install command">copy</button>
-      </div>
+      <CopyCommand command={install} />
       <p class="hero__actions">
         <a class="button button--primary" href="/docs/getting-started/">Get started</a>
         <a class="button" href="https://github.com/anton-fomin/ws">GitHub</a>
@@ -95,11 +56,11 @@ const inlineCode = (text: string) =>
       </div>
       <div class="terminal">
         <pre><code><span class="dim"># without ws, for every branch</span>
-cd ~/src/api   && git switch -c feature/login
-cd ~/src/web   && git switch -c feature/login
+cd ~/src/api && git switch -c feature/login
+cd ~/src/web && git switch -c feature/login
 cd ~/src/infra && git switch -c feature/login
-cp ../.env.backup .env   <span class="dim"># which one was it?</span>
-pnpm install             <span class="dim"># again</span></code></pre>
+cp ../.env.backup .env  <span class="dim"># which one was it?</span>
+pnpm install           <span class="dim"># again</span></code></pre>
       </div>
     </div>
   </section>
@@ -127,22 +88,44 @@ pnpm install             <span class="dim"># again</span></code></pre>
   </section>
 
   <section class="section container">
-    <h2>What comes with a switch</h2>
+    <h2>Features</h2>
     <ul class="features">
-      {
-        features.map((feature) => (
-          <li class="feature">
-            <h3>
-              <a href={feature.href}>{feature.title}</a>
-            </h3>
-            <p set:html={inlineCode(feature.text)} />
-          </li>
-        ))
-      }
+      <li>
+        <strong>One feature folder, every repo.</strong> Create worktrees side by side in <code>project/feature/</code>,
+        with <code>backend/</code> and <code>frontend/</code> inside.
+      </li>
+      <li>
+        <strong>Packages installed automatically.</strong> Works with uv, npm, pnpm and Yarn.
+        pnpm and Yarn reuse dependencies through hardlinks where possible.
+      </li>
+      <li>
+        <strong>Remote branches, ready locally.</strong> Fetch all repos with <code>ws fetch</code>,
+        then switch to new worktrees from a remote branch.
+      </li>
+      <li>
+        <strong>Run tasks across repos.</strong> Define <code>dev</code> in a Taskfile, justfile or <code>package.json</code>,
+        then run <code>ws run dev</code>. All repos run in parallel, with output in one console.
+      </li>
+      <li>
+        <strong>Logs your agent can read.</strong> Enable file logs for all tasks run with <code>ws run</code>.
+      </li>
+      <li>
+        <strong>Local files.</strong> Copy or link <code>.env</code>, editor settings and other files
+        from a <code>local/</code> folder into your worktrees.
+      </li>
+      <li>
+        <strong>Your setup commands.</strong> Run custom commands on worktree creation—for example,
+        decrypt SOPS secrets into a <code>.env</code> file.
+      </li>
+      <li>
+        <strong>For people who love the CLI.</strong> Open a tmux session or herdr workspace for your branch,
+        with a window or tab per repo and a shared root for multi-repo workspaces.
+      </li>
+      <li><strong>Agent skills included.</strong> Let your coding agent create worktrees, find its way around and run tasks.</li>
+      <li><strong>Written in Rust.</strong> Blazingly fast, of course.</li>
     </ul>
     <p class="note">
-      <code>git</code> is the only requirement. Every integration turns on when its program is installed, and none of them
-      can fail a switch.
+      <code>git</code> is the only requirement. tmux, herdr, fzf, zoxide and package managers are optional integrations.
     </p>
   </section>
 
@@ -151,7 +134,8 @@ pnpm install             <span class="dim"># again</span></code></pre>
     <div class="two-col">
       <div>
         <p>
-          Type <code>/ws &lt;task&gt;</code> in Claude Code, OpenCode or pi. The agent picks a branch name from your
+          Type <code>/ws &lt;task&gt;</code> in Claude Code or OpenCode, or <code>/skill:ws &lt;task&gt;</code> in pi.
+          The agent picks a branch name from your
           repositories' conventions, runs <code>ws switch</code>, and starts a fresh agent on the task in the new
           workspace's session.
         </p>
@@ -161,9 +145,7 @@ pnpm install             <span class="dim"># again</span></code></pre>
           for tasks. <a href="/docs/coding-agents/">Coding agents →</a>
         </p>
       </div>
-      <div class="terminal">
-        <pre><code><span class="prompt">$</span> npx skills add anton-fomin/ws -g -a claude-code opencode</code></pre>
-      </div>
+      <CopyCommand command="npx skills add anton-fomin/ws -g -a claude-code opencode" />
     </div>
   </section>
 
@@ -172,12 +154,12 @@ pnpm install             <span class="dim"># again</span></code></pre>
     <div class="install-options">
       <div>
         <h3>Linux and macOS</h3>
-        <div class="terminal"><pre><code>curl -fsSL https://github.com/anton-fomin/ws/releases/latest/download/install.sh | sh</code></pre></div>
+        <CopyCommand command={install} />
         <p>A prebuilt binary in <code>~/.local/bin</code>, checked against the release's checksum. No sudo.</p>
       </div>
       <div>
         <h3>Nix</h3>
-        <div class="terminal"><pre><code>nix profile add github:anton-fomin/ws</code></pre></div>
+        <CopyCommand command="nix profile add github:anton-fomin/ws" />
         <p>Or as a flake input, system-wide or in a project's dev shell.</p>
       </div>
     </div>
@@ -187,22 +169,6 @@ pnpm install             <span class="dim"># again</span></code></pre>
     </p>
   </section>
 </Base>
-
-<script>
-  for (const box of document.querySelectorAll<HTMLElement>('[data-copy]')) {
-    const button = box.querySelector('button')
-    button?.addEventListener('click', async () => {
-      try {
-        await navigator.clipboard.writeText(box.dataset.copy ?? '')
-        button.textContent = 'copied'
-      } catch {
-        button.textContent = 'press ctrl+c'
-        getSelection()?.selectAllChildren(box.querySelector('code')!)
-      }
-      setTimeout(() => (button.textContent = 'copy'), 2000)
-    })
-  }
-</script>
 
 <style>
   .hero {
@@ -230,50 +196,6 @@ pnpm install             <span class="dim"># again</span></code></pre>
     font-size: 1.2rem;
     color: var(--ws-text-muted);
     margin: 0 0 1.5rem;
-  }
-
-  .install {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    background: var(--ws-bg-inset);
-    border: 1px solid var(--ws-border);
-    border-radius: 6px;
-    padding: 0.6rem 0.6rem 0.6rem 1rem;
-    max-width: 100%;
-  }
-
-  .install code {
-    flex: 1;
-    min-width: 0;
-    overflow-x: auto;
-    white-space: nowrap;
-    font-size: 0.85rem;
-    background: none;
-    border: 0;
-    padding: 0;
-  }
-
-  .install__copy {
-    flex: none;
-    font: inherit;
-    font-family: var(--ws-font-mono);
-    font-size: 0.8rem;
-    color: var(--ws-text);
-    background: var(--ws-bg-raised);
-    border: 1px solid var(--ws-border);
-    border-radius: 4px;
-    padding: 0.3rem 0.6rem;
-    cursor: pointer;
-  }
-
-  .install__copy:hover {
-    border-color: var(--ws-accent);
-  }
-
-  .prompt {
-    color: var(--ws-accent);
-    user-select: none;
   }
 
   .hero__actions {
@@ -351,60 +273,49 @@ pnpm install             <span class="dim"># again</span></code></pre>
   }
 
   .features {
-    list-style: none;
-    padding: 0;
+    max-width: 78ch;
+    padding-left: 1.5rem;
     margin: 0;
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+    color: var(--ws-text-muted);
+    line-height: 1.65;
   }
 
-  .feature {
-    border: 1px solid var(--ws-border);
-    border-radius: 8px;
-    padding: 1.25rem;
-    background: var(--ws-bg-raised);
+  .features li {
+    padding-left: 0.35rem;
   }
 
-  .feature:hover {
-    border-color: var(--ws-accent);
+  .features li + li {
+    margin-top: 0.85rem;
   }
 
-  .feature h3 {
-    font-size: 1.05rem;
-    margin: 0 0 0.5rem;
-  }
-
-  .feature h3 a {
-    color: var(--ws-text);
-    text-decoration: none;
-  }
-
-  .feature h3 a::after {
-    content: ' →';
+  .features li::marker {
     color: var(--ws-accent);
   }
 
-  .feature p {
-    margin: 0;
-    color: var(--ws-text-muted);
-    font-size: 0.95rem;
+  .features strong {
+    color: var(--ws-text);
+    font-weight: 600;
+  }
+
+  .features code {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--ws-text);
+    overflow-wrap: anywhere;
   }
 
   .note {
+    max-width: 78ch;
+    margin-top: 1.5rem;
     color: var(--ws-text-muted);
+    font-size: 0.9rem;
   }
 
   .install-options {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
-  }
-
-  @media (min-width: 60rem) {
-    .install-options {
-      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-    }
   }
 
   .install-options h3 {
